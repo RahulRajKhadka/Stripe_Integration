@@ -1,54 +1,55 @@
-import User from "../Models/User.model.js";
-import jwt from "jsonwebtoken"
+import User from "../models/user.model.js";
+import jwt from "jsonwebtoken";
+import { redis } from "../lib/redis.js";
 
-const generateTokens=(userId)=>{
+const generateTokens = (userId) => {
+  const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: "15m"
+  });
 
-  const acessToken=jwt.sign({userId}, process.env.ACESS_TOKEN_SECRECT, {
+  const refreshToken = jwt.sign({ userId }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: "7d"
+  });
 
-    expiresIn:"15m"
+  return { accessToken, refreshToken };
+};
 
+const storeRefreshToken = async (userId, refreshToken) => {
 
-  })
+  await redis.set(`refresh_token:${userId}`, refreshToken, {
+    ex: 7 * 24 * 60 * 60 // 7 days in seconds
+  });
+};
 
-  const refreshToken=jwt.sign({userId}, process.env.REFRESH_TOKEN_SECRECT, {
-
-    expiresIn:"7D"
-
-  })
-
-  return {acessToken, refreshToken}
+const setCookies = (res, accessToken, refreshToken) => {
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 15 * 60 * 1000 // 15 minutes
+  });
+  
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  });
 };
 
 
-const storeRefreshToken=async(userId, refreshToken)=>{
-
-  await redis.set(`refresh_token :${userId}`,refreshToken,"EX", 7*24*60*60)
-}
-
-const setCookies=(res, acessToken, refreshToken)=>{
-
-  res.cookie("acessToken", acessToken , {
-    httpOnly:true, 
-    secure:process.env.NODE_ENV ==="production",
-    sameSite:"strict",
-    maxAge:15*60*1000
-
-  })
-  res.cookie("refreshToken", refreshToken , {
-    httpOnly:true, 
-    secure:process.env.NODE_ENV ==="production",
-    sameSite:"strict",
-    maxAge:15*60*1000
-
-  })
-}
-
 export const signup = async (req, res, next) => {
   try {
+    console.log("Signup request received:", req.body); // Debug log
+    console.log("Headers:", req.headers); // Debug log
+    
     const { email, password, name } = req.body;
 
     if (!email || !password || !name) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({ 
+        message: "All fields are required",
+        received: req.body 
+      });
     }
 
     const existingUser = await User.findOne({ email });
@@ -58,23 +59,29 @@ export const signup = async (req, res, next) => {
 
     const user = await User.create({ email, password, name });
 
-    const {acessToken, refreshToken}= generateTokens(user._id)
-    await storeRefreshToken(user._id,refreshToken)
+    const { accessToken, refreshToken } = generateTokens(user._id);
+    
+    // Add error handling for Redis
+    try {
+      await storeRefreshToken(user._id, refreshToken);
+    } catch (redisError) {
+      console.error("Redis error:", redisError);
+      // Continue anyway - don't fail signup if Redis fails
+    }
 
-    setCookies(res,acessToken, refreshToken )
+    setCookies(res, accessToken, refreshToken);
 
     return res.status(201).json({
-     user:{
-      _id:user._id,
-      name:user.name,
-      email:user.email,
-      role:user.role
-     },
-     message:"User created Sucessfully"
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      },
+      message: "User created successfully"
     });
   } catch (error) {
+    console.error("Signup error:", error);
     next(error);
   }
 };
-
-
