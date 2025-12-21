@@ -3,36 +3,25 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import authRoutes from './Routes/auth.route.js';
 import { connectDB } from './lib/db.js';
+import productRoutes from "./Routes/product.route.js"
 
 dotenv.config();
 
 const app = express();
 
-// Simplify CORS for development/testing
+
 app.use(cors()); // Remove the options for now
 
-// Body parsing middleware - MUST come before routes
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Test routes for debugging
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'Server is working!' });
-});
 
-// Test POST endpoint to check body parsing
-app.post('/api/test-post', (req, res) => {
-  console.log('Test POST body:', req.body);
-  console.log('Content-Type header:', req.headers['content-type']);
-  res.json({ 
-    message: 'POST received',
-    body: req.body,
-    success: true
-  });
-});
+
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/products',productRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
