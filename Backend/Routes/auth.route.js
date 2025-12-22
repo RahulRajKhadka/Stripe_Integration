@@ -3,8 +3,7 @@ import {
   signup, 
   login, 
   logout, 
-  refreshToken, 
-  getProfile, 
+  refreshToken,  
   verifyToken 
 } from "../Controller/auth.controller.js";
 
@@ -16,7 +15,5 @@ router.post("/login", login);
 router.post("/refresh-token", refreshToken);
 router.post("/logout", logout);
 
-// Protected routes (require authentication)
-router.get("/profile", verifyToken, getProfile);
 
 export default router;

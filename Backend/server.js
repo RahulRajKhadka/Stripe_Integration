@@ -1,27 +1,31 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import cookieParser from 'cookie-parser'; // ✅ Add this
 import authRoutes from './Routes/auth.route.js';
+import productRoutes from './Routes/product.route.js';
 import { connectDB } from './lib/db.js';
-import productRoutes from "./Routes/product.route.js"
 
 dotenv.config();
 
 const app = express();
 
+// ✅ CORS with credentials for cookies
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  credentials: true
+}));
 
-app.use(cors()); // Remove the options for now
+// ✅ Cookie parser middleware (MUST be before routes)
+app.use(cookieParser());
 
-
+// Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
-
-
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/products',productRoutes);
+app.use('/api/products', productRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

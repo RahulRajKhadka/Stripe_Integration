@@ -57,7 +57,7 @@ const clearCookies = (res) => {
 // SIGNUP CONTROLLER (already exists)
 export const signup = async (req, res, next) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name, role  } = req.body;
 
     if (!email || !password || !name) {
       return res.status(400).json({ message: "All fields are required" });
@@ -68,7 +68,9 @@ export const signup = async (req, res, next) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const user = await User.create({ email, password, name });
+    let userRole =role || "user";
+   
+    const user = await User.create({ email, password, name,role:userRole  });
 
     const { accessToken, refreshToken } = generateTokens(user._id);
     await storeRefreshToken(user._id, refreshToken);
@@ -222,37 +224,9 @@ export const refreshToken = async (req, res, next) => {
   }
 };
 
-// GET CURRENT USER PROFILE
-export const getProfile = async (req, res, next) => {
-  try {
-    // This middleware requires authentication - we'll add middleware for this
-    const userId = req.userId; // Assuming we'll set this in auth middleware
-    
-    const user = await User.findById(userId).select("-password");
-    
-    if (!user) {
-      return res.status(404).json({ 
-        message: "User not found" 
-      });
-    }
 
-    return res.status(200).json({
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        cartItems: user.cartItems,
-        createdAt: user.createdAt
-      }
-    });
-  } catch (error) {
-    console.error("Get profile error:", error);
-    next(error);
-  }
-};
 
-// VERIFY TOKEN MIDDLEWARE (for protecting routes)
+
 export const verifyToken = async (req, res, next) => {
   try {
     // Get token from cookies or Authorization header
