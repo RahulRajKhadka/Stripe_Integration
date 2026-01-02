@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser'; // ✅ Add this
 import authRoutes from './Routes/auth.route.js';
 import productRoutes from './Routes/product.route.js';
 import { connectDB } from './lib/db.js';
+import cartRoutes from "./Routes/cart.route.js"
 
 dotenv.config();
 
@@ -26,6 +27,8 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/cart',cartRoutes)
+app.use("/api/coupons",CouponRoutes)
 
 // Error handling middleware
 app.use((err, req, res, next) => {
