@@ -3,10 +3,11 @@ import { Redis } from "@upstash/redis";
 
 dotenv.config();
 
-export const redis = new Redis({
+const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-// Remove or comment out the test - it runs before server starts
 console.log("✅ Redis client initialized");
+
+export default redis;

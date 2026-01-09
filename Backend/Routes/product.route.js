@@ -11,9 +11,11 @@ const router = express.Router();
 
 router.get("/", protectRoute, adminRoute, getAllProducts);
 router.get("/featured", getFeaturerdProducts);
-router.get("/category/:category", getProductsByCategory);
+// router.get("/category/:category");
 router.post("/", protectRoute, adminRoute, createProduct);
 router.delete("/:id", protectRoute,adminRoute,deleteProduct)
-router.patch("/:id",protectRoute, adminRoute, toggleFeaturedProduct)
+// router.patch("/:id",protectRoute, adminRoute, toggleFeaturedProduct)
 router.get("/recommendations",getRecommendedProducts)
+
+
 export default router;

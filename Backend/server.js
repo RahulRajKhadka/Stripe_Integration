@@ -6,6 +6,8 @@ import authRoutes from './Routes/auth.route.js';
 import productRoutes from './Routes/product.route.js';
 import { connectDB } from './lib/db.js';
 import cartRoutes from "./Routes/cart.route.js"
+import CouponRoutes from "./Routes/coupon.route.js"
+import paymentRoutes from "./Routes/payment.route.js"
 
 dotenv.config();
 
@@ -27,8 +29,9 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/cart',cartRoutes)
-app.use("/api/coupons",CouponRoutes)
+app.use('/api/cart',cartRoutes);
+app.use("/api/coupons",CouponRoutes);
+app.use("/api/coupons",paymentRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
