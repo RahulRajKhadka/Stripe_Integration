@@ -2,3 +2,6 @@
 # .gitignore
 Backend/.env
 Frontend/.env
+Backend/.env
+Backend/.env
+**/.env
