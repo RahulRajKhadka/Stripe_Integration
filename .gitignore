@@ -1,1 +1,4 @@
-.env
+
+# .gitignore
+Backend/.env
+Frontend/.env
